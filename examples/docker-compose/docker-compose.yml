@@ -9,13 +9,13 @@ x-logging:
 
 services:
   rt-demo:
-    image: intelektikalt/stream-transcriber-demo:0.1.2
+    image: intelektikalt/stream-transcriber-demo:${gui_version}
     container_name: rt-demo
     logging: *default-logging
     restart: unless-stopped
     environment:
       - BASE_HREF=/streamer/
-      - SERVER=${KALDI_WS}
+      - KALDI_URL=${KALDI_URL}
     ports:
       - "8080:8000"  
      
