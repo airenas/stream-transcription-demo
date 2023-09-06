@@ -1,0 +1,165 @@
+.container {
+    width: 100%;
+    text-align: center;
+}
+
+.stream-input {
+    display: inline-block;
+    width: 60%; /* Make the input field 100% wide */
+    max-width: 500px;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 16px;
+    margin-bottom: 10px; /* Add some spacing between the input and button */
+}
+
+.start-button {
+    display: inline-block;
+    padding: 10px;
+    background-color: #0056b3;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    min-width: 80px;
+}
+
+.start-button:hover {
+    background-color: #003f80; /* Darker blue on hover */
+}
+
+.start-button:disabled {
+    background-color: #ccc; /* Change background color for disabled state */
+    cursor: not-allowed; /* Change cursor style to indicate not allowed */
+    color: #888; /* Change text color for disabled state */
+}
+
+.stop-button {
+    display: inline-block;
+    padding: 10px;
+    background-color: #FF4444; /* Red color */
+    color: #fff; /* White text color */
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    min-width: 80px;
+}
+
+/* Hover effect */
+.stop-button:hover {
+    background-color: #CC0000; /* Darker red on hover */
+}
+
+.page-title {
+    text-align: center; /* Center the title horizontally */
+    font-size: 36px; /* Increase the font size for a larger and fancier title */
+    color: #0056b3; /* Set the color of the title (you can choose your desired color) */
+    margin-top: 20px; /* Add some top margin for spacing */
+    text-transform: uppercase; /* Convert text to uppercase for a stylish look */
+    letter-spacing: 2px; /* Add letter spacing for a decorative effect */
+    font-weight: bold; /* Add bold styling for emphasis */
+}
+
+.result-area {
+    display: inline-block;
+    width: 95%; 
+    max-width: 800px;
+    padding-top: 10px; 
+    padding-bottom: 10px;
+    border: 2px solid #ccc;
+    border-radius: 5px;
+    font-size: 16px;
+    margin: 10px;
+}
+
+.res-div {
+    display: inline-block;
+    width: 100%; 
+    font-size: 20px;
+    color: #003f80;
+    text-align: left;
+    text-indent: 20px;
+}
+
+.partial-div {
+    display: inline-block;
+    width: 100%; 
+    font-size: 20px;
+    color: #CC0000;
+    text-align: left;
+    text-indent: 20px;
+}
+
+.panel-header {
+    color: #003f80;
+    cursor: pointer;
+    font-size: 10px;
+    position: absolute; 
+    bottom: 2px; 
+    right: 10px; 
+    padding: 2px;
+    z-index: 2; 
+}
+
+.debug-container {
+    position: relative; 
+    width: 95%;
+    max-width: 800px;
+    border: 2px solid #ccc;
+    border-radius: 5px;
+    margin: 0 auto;
+    padding-top: 10px; 
+    padding-bottom: 10px; 
+    margin-top: 10px;
+}
+
+.panel-content-div {
+    width: 80%; 
+    display: inline-block;
+    font-size: 14px;
+    text-align: left;
+    padding-left: 10px;
+}
+
+.panel-content {
+    color: #003f80;
+}
+
+.panel-content-error {
+    color: red;
+}
+
+.panel-content-div.active {
+    display: block;
+    max-height: 300px; 
+    overflow: hidden;
+    transition: max-height 0.3s ease; 
+}
+
+html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+}
+
+/* Style the page content (adjust this as needed) */
+body {
+    font-family: Arial, sans-serif;
+    line-height: 1.6;
+    margin-bottom: 50px; /* Ensure there's space for the footer */
+}
+
+/* Style the footer */
+footer {
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+    background-color: #f0f0f0;
+    text-align: center;
+    padding: 0px 0;
+    font-size: 12px; /* Adjust font size as needed */
+    color: #333; /* Adjust text color as needed */
+}
