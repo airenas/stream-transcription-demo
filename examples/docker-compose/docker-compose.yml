@@ -1,0 +1,41 @@
+version: '3.8'
+
+x-logging:
+  &default-logging
+  options:
+    max-size: '20m'
+    max-file: '3'
+  driver: json-file
+
+services:
+  rt-demo:
+    image: intelektikalt/stream-transcriber-demo:0.1.2
+    container_name: rt-demo
+    logging: *default-logging
+    restart: unless-stopped
+    environment:
+      - BASE_HREF=/streamer/
+      - SERVER=${KALDI_WS}
+    ports:
+      - "8080:8000"  
+     
+  manager:
+    image: airenas/docker-kaldi-gstreamer-server:${gstreamer_version}
+    container_name: manager
+    logging: *default-logging
+    restart: unless-stopped
+    entrypoint: ["python", "/opt/kaldi-gstreamer-server/kaldigstserver/master_server.py", "--port=9090"]
+    ports:
+      - "8082:9090"  
+
+  worker:
+    image: airenas/docker-kaldi-gstreamer-server:${gstreamer_version}
+    # container_name: worker
+    logging: *default-logging
+    restart: unless-stopped
+    entrypoint: ["python", "/opt/kaldi-gstreamer-server/kaldigstserver/worker.py", "-c", "/opt/models/${MODEL_YAML}", "-u", "ws://manager:9090/worker/ws/speech"]
+    environment:
+     - GST_PLUGIN_PATH=/opt/gst-kaldi-nnet2-online/src/:/opt/kaldi/src/gst-plugin/
+    volumes:
+     - ./models:/opt/models:ro
+     
