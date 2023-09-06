@@ -2,14 +2,17 @@ import AudioResampler from "./resampler";
 import {Config, RTTranscriber} from "./transcriber";
 import videojs from "video.js";
 
-
-const options = {sampleRate: 16000};
+const version = process.env.BUILD_VERSION;
+console.log(`Version: ${version}`);
 
 window.addEventListener('error', function (event) {
     console.error('An error occurred:', event.error.message);
 });
 
 document.addEventListener("DOMContentLoaded", function () {
+    const divElement = document.getElementById("transcriber");
+    const kaldiUrl = (divElement.getAttribute("kaldi_url") ?? '').trim().replace(/[\/]*$/g, '');
+
     const pageData = {};
     pageData.recording = false;
     pageData.debugVisible = true;
@@ -46,6 +49,9 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     const cfg = new Config();
+    cfg.server = kaldiUrl + '/speech';
+    cfg.statusServer = kaldiUrl + '/status'
+    cfg.sampleRate = 16000;
     cfg.onPartialResults = (data) => {
         console.log("onPartialResults " + data);
         var hypText = prettyfyHyp(data[0].transcript, doUpper, doPrependSpace);
@@ -93,6 +99,7 @@ document.addEventListener("DOMContentLoaded", function () {
         stop(pageData);
     };
 
+    addMsg(false, `Kaldi URL: ${cfg.server}`);
     addMsg(false, "Waiting for server ready ...");
 
     pageData.transcriber = new RTTranscriber(cfg);
@@ -133,7 +140,7 @@ document.addEventListener("DOMContentLoaded", function () {
             var bufferSize = 1024 * 8;
             capturer = audioContext.createScriptProcessor(bufferSize, 1, 1);
             pageData.source.connect(capturer);
-            var resampler = new AudioResampler(audioContext.sampleRate, options.sampleRate);
+            var resampler = new AudioResampler(audioContext.sampleRate, cfg.sampleRate);
             var initialized = false;
 
             
