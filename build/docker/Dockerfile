@@ -9,7 +9,7 @@ COPY package.json package-lock.json webpack.config.js /src
 RUN npm ci --no-audit
 
 COPY ./src /src/src
-RUN BUILD_VERSION=${BUILD_VERSION} npm run build-prod
+RUN BUILD_VERSION=${BUILD_VERSION} npm run build:prod
 
 #########################################################################################
 FROM nginxinc/nginx-unprivileged:1.25-alpine3.18-perl
