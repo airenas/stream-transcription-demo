@@ -64,15 +64,35 @@
 }
 
 .result-area {
-    display: inline-block;
-    width: 95%; 
-    max-width: 800px;
+    width: 100%; 
     padding-top: 10px; 
     padding-bottom: 10px;
-    border: 2px solid #ccc;
-    border-radius: 5px;
     font-size: 16px;
-    margin: 10px;
+
+}
+
+.line-container {
+    width: 100%;
+    text-align: center;
+    border: 3px solid #ccc;
+    border-radius: 5px;
+    max-width: 800px;
+    margin: 0 auto;
+    height: 40px;
+}
+
+
+.result-line {
+    display: inline-block;
+    width: 95%; 
+    padding-top: 5px; 
+    padding-bottom: 10px;
+    font-size: 20px;
+    white-space: nowrap; 
+    overflow: hidden; 
+    text-overflow: ellipsis; 
+    direction: rtl;
+    color: #CC0000;
 }
 
 .res-div {

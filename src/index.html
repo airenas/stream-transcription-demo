@@ -20,7 +20,13 @@
             width="640" height="50" controls style="display: none;"></video>
 
     </div>
-    <div class="container" id="transcriber" kaldi_url="<%= KALDI_URL %>">
+    <div class="line-container">
+        <div id="result-line" class="result-line"></div>
+    </div>
+    <div class="debug-container" id="transcriber" kaldi_url="<%= KALDI_URL %>">
+        <div class="panel-header" id="res-header">
+            <div>Results</div>
+        </div>
         <div id="result-area" class="result-area"></div>
     </div>
 

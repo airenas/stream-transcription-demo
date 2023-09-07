@@ -16,6 +16,7 @@ document.addEventListener('DOMContentLoaded', function () {
   const pageData = {}
   pageData.recording = false
   pageData.debugVisible = true
+  pageData.resVisible = true
   pageData.startButton = document.getElementById('start-button')
   pageData.stopButton = document.getElementById('stop-button')
   pageData.player = null
@@ -25,6 +26,7 @@ document.addEventListener('DOMContentLoaded', function () {
   pageData.res = []
   pageData.partials = ''
   pageData.resultArea = document.getElementById('result-area')
+  pageData.resultLine = document.getElementById('result-line')
 
   pageData.video = document.getElementById('video')
   const inputElement = document.getElementById('stream-url')
@@ -191,6 +193,12 @@ function initPanel (pageData) {
     pageData.debugVisible = !pageData.debugVisible
     updateInfo(pageData)
   })
+  const resHeader = document.getElementById('res-header')
+
+  resHeader.addEventListener('click', () => {
+    pageData.resVisible = !pageData.resVisible
+    updateRes(pageData)
+  })
 }
 
 function capitaliseFirstLetter (string) {
@@ -230,6 +238,11 @@ function prettyfyHyp (text, doCapFirst, doPrependSpace) {
 }
 
 function updateRes (pageData) {
+  if (pageData.resVisible) {
+    pageData.resultArea.style.display = 'inline-block'
+  } else {
+    pageData.resultArea.style.display = 'none'
+  }
   while (pageData.res.length > 3) {
     pageData.res.shift()
   }
@@ -240,6 +253,15 @@ function updateRes (pageData) {
   })
   html += `<div class="partial-div">${pageData.partials}</div>`
   pageData.resultArea.innerHTML = html
+  pageData.resultLine.innerHTML = makeString(pageData)
+}
+
+function makeString (pageData) {
+  let res = pageData.res.join(' ') + ' ' + pageData.partials
+  if (res.length > 150) {
+    res = res.slice(-150)
+  }
+  return res
 }
 
 function updateInfo (pageData) {
