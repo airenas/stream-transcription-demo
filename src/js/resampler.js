@@ -10,7 +10,7 @@ export default class AudioResampler {
       return buffer
     }
     if (this.fromRate < this.toRate) {
-      throw 'downsampling rate must be smaller than original sample rate'
+      throw new Error('downsampling rate must be smaller than original sample rate')
     }
     const sampleRateRatio = this.fromRate / this.toRate
     const newLength = Math.round(buffer.length / sampleRateRatio)
