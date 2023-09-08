@@ -31,8 +31,6 @@ document.addEventListener('DOMContentLoaded', function () {
   pageData.video = document.getElementById('video')
   const inputElement = document.getElementById('stream-url')
 
-  let capturer = null
-  let audioContext = null
   const doUpper = true
   const doPrependSpace = true
   pageData.workers = 0
@@ -109,15 +107,18 @@ document.addEventListener('DOMContentLoaded', function () {
 
   updateComponents(pageData)
 
-  pageData.startButton.addEventListener('click', function () {
+  pageData.startButton.addEventListener('click', async function () {
     console.log('start')
     try {
-      audioContext = new (window.AudioContext || window.webkitAudioContext)()
+      if (!pageData.audioContext) {
+        pageData.audioContext = new (window.AudioContext || window.webkitAudioContext)()
+      }
 
       if (pageData.video.src === '') {
+        pageData.url = inputElement.value
         const sourceElement = document.createElement('source')
         sourceElement.type = 'application/x-mpegURL'
-        sourceElement.src = inputElement.value
+        sourceElement.src = pageData.url
         pageData.video.appendChild(sourceElement)
         if (!pageData.player) {
           pageData.player = videojs('video', {
@@ -129,36 +130,45 @@ document.addEventListener('DOMContentLoaded', function () {
             stop(pageData)
           })
         }
-      } else if (pageData.video.src.source !== inputElement.value) {
+        pageData.source = pageData.audioContext.createMediaElementSource(pageData.video)
+      } else if (pageData.url !== inputElement.value) {
         console.error(`Change url ${inputElement.value}`)
         pageData.player.src({ type: 'application/x-mpegURL', src: inputElement.value })
+        pageData.url = inputElement.value
       }
 
-      pageData.source = audioContext.createMediaElementSource(pageData.video)
-      pageData.source.connect(audioContext.destination)
+      const scriptPath = new URL('audio-processor.js', import.meta.url)
+      await pageData.audioContext.audioWorklet.addModule(scriptPath.href)
+      pageData.workletNode = new AudioWorkletNode(pageData.audioContext, 'streamer-audio-processor', { processorOptions: { sampleRate: pageData.audioContext.sampleRate, bufferInSec: 0.25 } })
 
-      const bufferSize = 1024 * 8
-      capturer = audioContext.createScriptProcessor(bufferSize, 1, 1)
-      pageData.source.connect(capturer)
-      const resampler = new AudioResampler(audioContext.sampleRate, cfg.sampleRate)
+      pageData.source.connect(pageData.audioContext.destination)
+      pageData.source.connect(pageData.workletNode)
+      const resampler = new AudioResampler(pageData.audioContext.sampleRate, cfg.sampleRate)
       let initialized = false
 
-      capturer.onaudioprocess = function (e) {
-        const buffer = e.inputBuffer.getChannelData(0)
-        if (buffer.length > 0 && pageData.transcriberReady) {
-          const pcmData = resampler.downsampleAndConvertToPCM(buffer)
-          pageData.transcriber.sendAudio(pcmData)
-        }
-        if (!pageData.transcriberReady && !initialized) {
-          initialized = true
-          pageData.transcriber.init()
-          if (pageData.res.length > 0) {
-            pageData.res.push('------------')
+      pageData.workletNode.port.onmessage = (event) => {
+        console.log('Received worklet event')
+        if (event.data.type === 'audioData') {
+          const buffer = event.data.data
+          console.log(`Received audio data: ${buffer}`)
+          if (buffer.length > 0 && pageData.transcriberReady) {
+            console.log(`Received audio data: ${buffer}`)
+            const pcmData = resampler.downsampleAndConvertToPCM(buffer)
+            console.log(`pcm: ${pcmData}`)
+            pageData.transcriber.sendAudio(pcmData)
           }
-          pageData.partials = ''
-          updateRes(pageData)
+          if (!pageData.transcriberReady && !initialized) {
+            initialized = true
+            pageData.transcriber.init()
+            if (pageData.res.length > 0) {
+              pageData.res.push('------------')
+            }
+            pageData.partials = ''
+            updateRes(pageData)
+          }
         }
       }
+
       pageData.player.play()
       pageData.recording = true
       updateComponents(pageData)
@@ -172,17 +182,26 @@ document.addEventListener('DOMContentLoaded', function () {
   pageData.stopButton.addEventListener('click', function () {
     console.log('stop')
     stop(pageData)
+    // const bbf = bf.reduce((acc, ca) => { return acc.concat(Array.from(ca)) }, [])
+    // const data = encodeWAV(bbf, 44100)
+    // const blob = new Blob([data], { type: 'audio/wav' })
+    // const downloadLink = document.createElement('a')
+    // downloadLink.href = URL.createObjectURL(blob)
+    // downloadLink.download = 'audio.wav'
+    // downloadLink.textContent = 'Download WAV'
+    // document.body.appendChild(downloadLink)
   })
 })
 
 function stop (pageData) {
   pageData.recording = false
-  pageData.source.disconnect()
   if (pageData.player) {
     pageData.player.pause()
   }
-  pageData.transcriber.stop()
+  pageData.workletNode.disconnect()
+  pageData.source.disconnect()
   pageData.transcriberReady = false
+  pageData.transcriber.stop()
   updateComponents(pageData)
 };
 
@@ -295,3 +314,52 @@ function updateComponents (pageData) {
     pageData.startButton.style.display = 'inline-block'
   }
 }
+
+// function floatTo16BitPCM (output, offset, input) {
+//   for (let i = 0; i < input.length; i++, offset += 2) {
+//     const s = Math.max(-1, Math.min(1, input[i]))
+//     output.setInt16(offset, s < 0 ? s * 0x8000 : s * 0x7FFF, true)
+//   }
+// }
+
+// function writeString (view, offset, string) {
+//   for (let i = 0; i < string.length; i++) {
+//     view.setUint8(offset + i, string.charCodeAt(i))
+//   }
+// }
+
+// function encodeWAV (samples, sampleRate) {
+//   const buffer = new ArrayBuffer(44 + samples.length * 2)
+//   const view = new DataView(buffer)
+
+//   /* RIFF identifier */
+//   writeString(view, 0, 'RIFF')
+//   /* file length */
+//   view.setUint32(4, 32 + samples.length * 2, true)
+//   /* RIFF type */
+//   writeString(view, 8, 'WAVE')
+//   /* format chunk identifier */
+//   writeString(view, 12, 'fmt ')
+//   /* format chunk length */
+//   view.setUint32(16, 16, true)
+//   /* sample format (raw) */
+//   view.setUint16(20, 1, true)
+//   /* channel count */
+//   view.setUint16(22, 1, true)
+//   /* sample rate */
+//   view.setUint32(24, sampleRate, true)
+//   /* byte rate (sample rate * block align) */
+//   view.setUint32(28, sampleRate * 4, true)
+//   /* block align (channel count * bytes per sample) */
+//   view.setUint16(32, 4, true)
+//   /* bits per sample */
+//   view.setUint16(34, 16, true)
+//   /* data chunk identifier */
+//   writeString(view, 36, 'data')
+//   /* data chunk length */
+//   view.setUint32(40, samples.length * 2, true)
+
+//   floatTo16BitPCM(view, 44, samples)
+
+//   return view
+// }
