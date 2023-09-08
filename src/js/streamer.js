@@ -109,16 +109,16 @@ document.addEventListener('DOMContentLoaded', function () {
 
   pageData.startButton.addEventListener('click', async function () {
     console.log('start')
+    const url = inputElement.value
     try {
       if (!pageData.audioContext) {
         pageData.audioContext = new (window.AudioContext || window.webkitAudioContext)()
       }
 
       if (pageData.video.src === '') {
-        pageData.url = inputElement.value
         const sourceElement = document.createElement('source')
         sourceElement.type = 'application/x-mpegURL'
-        sourceElement.src = pageData.url
+        sourceElement.src = url
         pageData.video.appendChild(sourceElement)
         if (!pageData.player) {
           pageData.player = videojs('video', {
@@ -126,15 +126,15 @@ document.addEventListener('DOMContentLoaded', function () {
             errorDisplay: true
           })
           pageData.player.on('error', (e) => {
-            addMsg(true, `Can't play: ${inputElement.value}`)
+            addMsg(true, `Can't play: ${url}`)
+            pageData.url = ''
             stop(pageData)
           })
         }
         pageData.source = pageData.audioContext.createMediaElementSource(pageData.video)
-      } else if (pageData.url !== inputElement.value) {
-        console.error(`Change url ${inputElement.value}`)
-        pageData.player.src({ type: 'application/x-mpegURL', src: inputElement.value })
-        pageData.url = inputElement.value
+      } else if (pageData.url !== url) {
+        console.error(`Change url to ${url}`)
+        pageData.player.src({ type: 'application/x-mpegURL', src: url })
       }
 
       const scriptPath = new URL('audio-processor.js', import.meta.url)
@@ -152,30 +152,28 @@ document.addEventListener('DOMContentLoaded', function () {
           const buffer = event.data.data
           console.log(`Received audio data: ${buffer}`)
           if (buffer.length > 0 && pageData.transcriberReady) {
-            console.log(`Received audio data: ${buffer}`)
             const pcmData = resampler.downsampleAndConvertToPCM(buffer)
-            console.log(`pcm: ${pcmData}`)
             pageData.transcriber.sendAudio(pcmData)
           }
           if (!pageData.transcriberReady && !initialized) {
             initialized = true
-            pageData.transcriber.init()
-            if (pageData.res.length > 0) {
-              pageData.res.push('------------')
-            }
+            pageData.res = []
             pageData.partials = ''
+            pageData.transcriber.init()
             updateRes(pageData)
           }
         }
       }
 
+      pageData.url = url
       pageData.player.play()
       pageData.recording = true
       updateComponents(pageData)
     } catch (error) {
       console.error(error)
-      addMsg(true, `Can't play ${inputElement.value}`)
+      addMsg(true, `Can't play ${url}`)
       stop(pageData)
+      pageData.url = ''
     }
   })
 
