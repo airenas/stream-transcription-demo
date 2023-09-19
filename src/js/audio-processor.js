@@ -11,7 +11,7 @@ class StreamerAudioProcessor extends AudioWorkletProcessor {
   }
 
   process (inputs, outputs, parameters) {
-    console.log('on process')
+    // console.log('on process')
     const input = inputs[0]
     if (input[0] === undefined) {
       console.log('no data')
