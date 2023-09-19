@@ -31,8 +31,8 @@ document.addEventListener('DOMContentLoaded', function () {
   pageData.video = document.getElementById('video')
   const inputElement = document.getElementById('stream-url')
 
-  const doUpper = true
-  const doPrependSpace = true
+  const doUpper = false
+  const doPrependSpace = false
   pageData.workers = 0
 
   pageData.infoArea = document.getElementById('info-area')
