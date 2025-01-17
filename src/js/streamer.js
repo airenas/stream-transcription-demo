@@ -190,9 +190,21 @@ function stop (pageData) {
   pageData.recording = false
   if (pageData.player) {
     pageData.player.pause()
+    // pageData.player.dispose()
+    // pageData.player = null
   }
-  pageData.workletNode.disconnect()
-  pageData.source.disconnect()
+  if (pageData.video) {
+    pageData.video.pause()
+  }
+  if (pageData.source) {
+    pageData.source.disconnect()
+    // pageData.source = null
+  }
+  if (pageData.workletNode) {
+    pageData.workletNode.disconnect()
+    pageData.workletNode.port.close()
+    pageData.workletNode = null
+  }
   pageData.transcriberReady = false
   pageData.transcriber.stop()
   updateComponents(pageData)

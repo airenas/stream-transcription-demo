@@ -51,7 +51,7 @@ services:
      - "8082:8000"  
 
   norm-num:
-    image: intelektikalt/invnorm-nums:0.1.8
+    image: intelektikalt/invnorm-nums:0.1.10
     logging: *default-logging
     restart: unless-stopped
      
